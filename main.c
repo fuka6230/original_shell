@@ -3,25 +3,34 @@
 #include <string.h>
 #include <unistd.h>
 
+#define	BUFFERSIZE	1024
+
 int main(void) {
+	char buf[BUFFERSIZE];
 	char string[128];
-	char *first_string;
-	char *argv[] = {NULL, NULL, NULL, NULL, NULL};
+	char first_string[BUFFERSIZE];
+	char **argv;
 	int argv_index = 1;
+
+	argv = (char **)calloc(5,sizeof(char *));
+	for(int i = 0; i < 5; i++){
+			argv[i] = (char *)calloc(BUFFERSIZE,sizeof(char));
+	}
 	fgets(string, 128, stdin);
 	if (strcmp(string, "exit\n") == 0) {
 		return 0;
 	}
 
 	char *tp;
-	first_string = strtok(string, " \n");
-	argv[0] = first_string;
+	tp = strtok(string, " \n");
+	
+	snprintf(argv[0], BUFFERSIZE, "%s", tp);
 	while ( tp != NULL ) {
-		tp = strtok(NULL," \n" );
+		tp = strtok(NULL," \n");
 		if (tp != NULL) {
-			argv[argv_index] = tp;
+			snprintf(argv[argv_index], BUFFERSIZE, "%s", tp);
+			argv_index++;
 		}
-		argv_index++;
 	}
 	argv[argv_index] = NULL;
 			
@@ -32,11 +41,14 @@ int main(void) {
 	}
 
 	if (child == 0) {
-		char str_init[50] = "/bin/";
-		char string_copy[20];
-		strcpy(string_copy, first_string);
-		strcat(str_init, string_copy);
-		execv(str_init, argv);
+		char *str_init = "/bin/";
+		char command[BUFFERSIZE];
+		snprintf(command, BUFFERSIZE, "%s%s", str_init, argv[0]);
+		execv(command, argv);
+		for(int i = 0; i < 5; i++){
+			free(argv[i]);
+		}
+		free(argv);
 	}
 	return 0;
 }
