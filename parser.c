@@ -50,11 +50,6 @@ Node *process_command(char *command) {
 			argv[i] = (char *)calloc(BUFFERSIZE,sizeof(char));
 	}
 
-	// fgets(string, BUFFERSIZE, stdin);
-	// if (strcmp(string, "exit\n") == 0) {
-	// 	exit(1);
-	// }
-
 	char *tp;
 	tp = strtok(command, " \n");
 	

@@ -4,23 +4,29 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <fcntl.h>
+#include <sys/wait.h>
+#include <signal.h>
+
 
 #define	BUFFERSIZE 1024
-#define	TOKENNUMBER 10
-#define STDIN "<"
-
-// extern char **argv;
+#define	ARGVNUMBER 10
+#define MAXCOMMANDLENGTH 128
 
 typedef struct Node Node;
 struct Node {
 	char **argv;
 	char *output_to;
 	char *input_from;
-	bool has_pipe;
 	Node *next;
 };
 
-Node *tokenize();
+typedef struct Token Token;
+struct Token {
+	char *command;
+	Token *next;
+};
 
+Token *tokenize(void);
+Node  *parse(void);
 
 
