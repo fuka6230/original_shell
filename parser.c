@@ -4,6 +4,8 @@ char **argv;
 char *output_file; 
 char *input_file;
 
+bool only_one_command;
+
 void show_node(Node *node) {
 	if (node->next != NULL) {
 		show_node(node->next);
@@ -91,6 +93,8 @@ Node *parse(void) {
 	Node  *first_node = NULL;
 	Token *token = tokenize();
 	while (1) {
+		output_file = NULL;
+		input_file = NULL;
 		node = process_command(token->command);
 		if (old_node != NULL) {
 			old_node->next = node;
@@ -106,5 +110,11 @@ Node *parse(void) {
 		token = token->next;
 	}
 	show_node(first_node);
+	if (first_node->next == NULL) {
+		only_one_command = true;
+	}
+	else {
+		only_one_command = false;
+	}
 	return first_node;
 }

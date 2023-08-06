@@ -1,20 +1,18 @@
 #include "header.h"
 
-bool only_one_command;
-
 void output_to_file(char *file_name) {
 	int fd;
-		fd = open(file_name, O_WRONLY | O_CREAT | O_TRUNC, 0666);
-		if (fd < 0) {
-			perror("open");
-			exit(1);
-		}
-		if (dup2(fd, 1) < 0) {
-			perror("dup2");
-			close(fd);
-			exit(1);
-		}
+	fd = open(file_name, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+	if (fd < 0) {
+		perror("open");
+		exit(1);
+	}
+	if (dup2(fd, 1) < 0) {
+		perror("dup2");
 		close(fd);
+		exit(1);
+	}
+	close(fd);
 }
 
 void execute(Node *node) {
@@ -53,11 +51,7 @@ void pipe_process(Node *node) {
 		if (only_one_command == true && node->output_to != NULL) {
 			output_to_file(node->output_to);
 		}
-		else {
-			only_one_command = false;
-		}
 		execute(node);
-		free(node);
 	}
 	else {
 		pipe(fd);
@@ -88,10 +82,10 @@ void pipe_process(Node *node) {
 }
 
 int main(void) {
-	Node *node = (Node *)calloc(1, sizeof(Node));
 	int child;
 	
 	while (1) {
+		Node *node = (Node *)calloc(1, sizeof(Node));
 		node = parse();
 
 		if ((child = fork()) < 0) {
@@ -99,11 +93,11 @@ int main(void) {
 			exit(1);
 		}
 		if (child == 0) {
-			only_one_command = true;
 			pipe_process(node);
 		}
 		else
 			wait(NULL);
+		free(node);
 	}
 
   return 0;

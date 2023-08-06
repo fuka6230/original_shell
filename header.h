@@ -12,6 +12,8 @@
 #define	ARGVNUMBER 10
 #define MAXCOMMANDLENGTH 128
 
+extern bool only_one_command;
+
 typedef struct Node Node;
 struct Node {
 	char **argv;
