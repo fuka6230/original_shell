@@ -1,8 +1,13 @@
 #include "header.h"
 
-void output_to_file(char *file_name) {
+void output_to_file(Node *node) {
 	int fd;
-	fd = open(file_name, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+	if (node->is_append == true) {
+		fd = open(node->output_to,  O_WRONLY | O_APPEND, 0666);
+	}
+	else {
+		fd = open(node->output_to,  O_WRONLY | O_CREAT | O_TRUNC, 0666);
+	}
 	if (fd < 0) {
 		perror("open");
 		exit(1);
@@ -49,7 +54,7 @@ void pipe_process(Node *node) {
 
 	if (node->next == NULL){
 		if (only_one_command == true && node->output_to != NULL) {
-			output_to_file(node->output_to);
+			output_to_file(node);
 		}
 		execute(node);
 	}
@@ -62,6 +67,9 @@ void pipe_process(Node *node) {
 		else if (child == 0) {
 			close(fd[0]);
       dup2(fd[1], 1);
+			if (node->is_pipe_error == true) {
+				dup2(fd[1], 2);
+			}
       close(fd[1]);
       
       pipe_process(node->next);
@@ -74,7 +82,7 @@ void pipe_process(Node *node) {
       close(fd[0]);
       
 			if (node->output_to != NULL) {
-				output_to_file(node->output_to);
+				output_to_file(node);
 			}
       execute(node);
     }

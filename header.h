@@ -19,6 +19,8 @@ struct Node {
 	char **argv;
 	char *output_to;
 	char *input_from;
+	bool is_pipe_error;
+	bool is_append;
 	Node *next;
 };
 

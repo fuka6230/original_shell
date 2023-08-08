@@ -13,7 +13,7 @@ void show_node(Node *node) {
 }
 
 
-Node *new_node(char **argv, char *output_file, char *input_file, int argv_num) {
+Node *new_node(char **argv, char *output_file, char *input_file, int argv_num, bool is_start_and, bool is_append) {
 	char **tmp;
 	Node *node = (Node *)calloc(1, sizeof(Node));
 
@@ -38,6 +38,8 @@ Node *new_node(char **argv, char *output_file, char *input_file, int argv_num) {
 	else
 		node->input_from = input_file;
 	node->next = NULL;
+	node->is_pipe_error = is_start_and;
+	node->is_append = is_append;
 	return node;
 }
 
@@ -45,7 +47,9 @@ Node *process_command(char *command) {
 	char buf[BUFFERSIZE];
 	char string[128];
 	char first_string[BUFFERSIZE];
-	int argv_index = 1;
+	int argv_index = 0;
+	bool is_start_and = false;
+	bool is_append_to_file = false;
 
 	argv = (char **)calloc(ARGVNUMBER,sizeof(char *));
 	for(int i = 0; i < ARGVNUMBER; i++){
@@ -54,11 +58,28 @@ Node *process_command(char *command) {
 
 	char *tp;
 	tp = strtok(command, " \n");
-	
-	snprintf(argv[0], BUFFERSIZE, "%s", tp);
+
+	if (strcmp(tp, "&") == 0) {
+		is_start_and = true;
+	}
+	else {
+		snprintf(argv[argv_index], BUFFERSIZE, "%s", tp);
+		argv_index++;
+	}
+
 	while ( tp != NULL ) {
 		tp = strtok(NULL," \n");
-		if (tp != NULL && strcmp(tp, ">") == 0) {
+		if (tp != NULL && strcmp(tp, ">>") == 0) {
+			tp = strtok(NULL," \n");
+			if (tp == NULL) {
+				exit(1);
+			}
+			else {
+				is_append_to_file = true;
+				output_file = tp;
+			}
+		}
+		else if (tp != NULL && strcmp(tp, ">") == 0) {
 			tp = strtok(NULL," \n");
 			if (tp == NULL) {
 				exit(1);
@@ -81,8 +102,7 @@ Node *process_command(char *command) {
 			argv_index++;
 		}
 	}
-	// argv[argv_index] = NULL;
-	Node *node = new_node(argv, output_file, input_file, argv_index);
+	Node *node = new_node(argv, output_file, input_file, argv_index, is_start_and, is_append_to_file);
 	free(tp);
 	return node;
 }
