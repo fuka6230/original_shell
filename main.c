@@ -66,19 +66,29 @@ void pipe_process(Node *node) {
 		}
 		else if (child == 0) {
 			close(fd[0]);
-      dup2(fd[1], 1);
+			if (dup2(fd[1], 1) < 0) {
+				perror("dup2");
+				close(fd[1]);
+				exit(1);
+			}
 			if (node->is_pipe_error == true) {
-				dup2(fd[1], 2);
+				if (dup2(fd[1], 2) < 0) {
+					perror("dup2");
+					close(fd[1]);
+					exit(1);
+				}
 			}
       close(fd[1]);
       
       pipe_process(node->next);
 		}
 		else {
-      // 親プロセスならパイプをstdinにdup2して、
-      // 右からi番目のコマンドを実行
       close(fd[1]);
-      dup2(fd[0], 0);
+			if (dup2(fd[0], 0) < 0) {
+				perror("dup2");
+				close(fd[0]);
+				exit(1);
+			}
       close(fd[0]);
       
 			if (node->output_to != NULL) {
@@ -89,12 +99,19 @@ void pipe_process(Node *node) {
 	}
 }
 
+void free_node(Node *node) {
+	for(int i = 0; i < ARGVNUMBER; i++){
+				free(node->argv[i]);
+	}
+	free(node->argv);
+	free(node);
+}
+
 int main(void) {
 	int child;
 	
 	while (1) {
-		Node *node = (Node *)calloc(1, sizeof(Node));
-		node = parse();
+		Node *node = parse();
 
 		if ((child = fork()) < 0) {
 			perror("fork");
@@ -105,6 +122,7 @@ int main(void) {
 		}
 		else
 			wait(NULL);
+		free(node->argv);
 		free(node);
 	}
 

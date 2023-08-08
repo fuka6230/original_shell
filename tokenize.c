@@ -29,26 +29,17 @@ Token *tokenize(void) {
 		exit(1);
 	}
 
-	// printf("%s", string);
 	tp = strtok(string, "|");
 	snprintf(command, MAXCOMMANDLENGTH, "%s", tp);
-	// printf("%s\n", command);
 	Token *token = new_token(command, NULL);
-	// printf("first: %s\n", token->command);
-
 
 	while(tp != NULL) {
-		// strtok関数により変更されたNULLのポインタが先頭
 		tp = strtok(NULL, "|");
 		
-		// ptrがNULLの場合エラーが発生するので対処
 		if(tp != NULL) {
 			Token *next_token = token;
 			snprintf(command, MAXCOMMANDLENGTH, "%s", tp);
-			// printf("next: %s\n", next_token->command);
 			token = new_token(command, next_token);
-			// printf("now: %s\n", token->command);
-			// printf("old: %s\n", token->next->command);
 		}
 	}
 	return token;

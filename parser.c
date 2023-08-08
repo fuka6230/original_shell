@@ -6,13 +6,6 @@ char *input_file;
 
 bool only_one_command;
 
-void show_node(Node *node) {
-	if (node->next != NULL) {
-		show_node(node->next);
-	}
-}
-
-
 Node *new_node(char **argv, char *output_file, char *input_file, int argv_num, bool is_start_and, bool is_append) {
 	char **tmp;
 	Node *node = (Node *)calloc(1, sizeof(Node));
@@ -111,6 +104,8 @@ Node *parse(void) {
 	Node *node;
 	Node *old_node = NULL;
 	Node  *first_node = NULL;
+	Token *old_token;
+
 	Token *token = tokenize();
 	while (1) {
 		output_file = NULL;
@@ -122,14 +117,15 @@ Node *parse(void) {
 		if (first_node == NULL) {
 			first_node = node;
 		}
-		// printf("%s\n", node->argv[0]);
 		if (token->next == NULL) {
 			break;
 		}
 		old_node = node;
+		old_token = token;
 		token = token->next;
+		free(old_token);
 	}
-	show_node(first_node);
+
 	if (first_node->next == NULL) {
 		only_one_command = true;
 	}
